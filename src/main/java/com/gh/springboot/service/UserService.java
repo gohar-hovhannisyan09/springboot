@@ -27,7 +27,7 @@ public class UserService {
     public User create(User user) {
         Optional<User> optionalUser = userRepository.findByEmail(user.getEmail());
         if (optionalUser.isPresent()) {
-            throw new IllegalStateException("User with this email address already exists");
+            checkIfEmailExists(user.getEmail());
         }
         return userRepository.save(user);
     }
@@ -36,7 +36,7 @@ public class UserService {
     public void delete(Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isEmpty()) {
-            throw new IllegalStateException("User with such ID " + id + " does not exist");
+            checkIfIdExists(id);
         }
         userRepository.deleteById(id);
     }
@@ -46,13 +46,14 @@ public class UserService {
     public void update(Long id, String name, String lastName, String email) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isEmpty()) {
-            throw new IllegalStateException("User with such ID " + id + " does not exist");
+            checkIfIdExists(id);
         }
         User user = optionalUser.get();
         if (email != null && !email.equals(user.getEmail())) {
             Optional<User> optionalUserByEmail = userRepository.findByEmail(email);
             if (optionalUserByEmail.isPresent()) {
-                throw new IllegalStateException("User with this email address already exists");
+
+              checkIfEmailExists(email);
             }
             user.setEmail(email);
         }
@@ -69,8 +70,20 @@ public class UserService {
     public User getById(Long id){
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isEmpty()) {
-            throw new IllegalStateException("User with such ID " + id + " does not exist");
+            checkIfIdExists(id);
         }
        return optionalUser.get();
+    }
+
+    private void checkIfEmailExists(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalStateException("User with this email address already exists");
+        }
+    }
+
+    private void checkIfIdExists(Long id) {
+        if (userRepository.findById(id).isEmpty()) {
+            throw new IllegalStateException("User with such ID " + id + " does not exist");
+        }
     }
 }
